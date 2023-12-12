@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  tf:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+        # Ensure that the variables in .env match the same variables in devcontainer.json
+        - .env
+
+    volumes:
+      - ../..:/workspaces:cached
+      
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+
+    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    network_mode: tf:fortimanager
+
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally. 
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+  fortimanager:
+    image: fortinet/fortimanager:latest
+    restart: always
+    env_file:
+      # Ensure that the variables in .env match the same variables in devcontainer.json
+      - .env
+    volumes:
+      - fortimanager-var:/var
+      - fortimanager-data:/data
+    ports:
+      - 40443:443
+      - 4022:22
+      - 4023:23
+      - 8888:8888
+      - 8889:8889
+      - 8090:8090
+      - 4161:161
+      - 4541:541
+
+
+volumes:
+  fortimanager-var:
+  fortimanager-data:
+
+
+# docker run -dit --restart always -p 541:541 -p 40443:443 -p 4022:22 -p 4023:23 -p 8888:8888 -p 8888:8888/udp -p 8889:8889 
+# -p 8889:8889/udp -p 8890:8890 -p 8080:8080 -p 161:161/udp 
+# --cap-add=ALL -v/var/fmg/var_fmgt100:/var -v/var/fmg/data_fmgt100:/data fortinet/fortimanager:latest
+
+    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
